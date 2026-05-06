@@ -1,0 +1,15 @@
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  generation: 2
+  name: fraud
+  namespace: argocd
+spec:
+  description: A project for fraud detection applications
+  destinations:
+  - name: '*'
+    namespace: '*'
+    server: '*'
+  sourceRepos:
+  - https://github.com/venkatesharelly/fraud-services.git
+  - https://github.com/venkatesharelly/fraud-helm.git

@@ -1,0 +1,82 @@
+steps:
+  # 1. Configure kubectl
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - gcloud container clusters get-credentials fraud-cluster --zone us-central1-a
+    id: 'configure-kubectl'
+
+  # 2. Validate projects
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - |
+        for file in $(ls argo-projects | grep -v cloudbuild); do
+          kubectl apply -f argo-projects/$file -n argocd --dry-run=server
+        done
+    id: 'test-check-for-new-projects'
+
+  # 3. Apply projects
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - |
+        for file in $(ls argo-projects | grep -v cloudbuild); do
+          kubectl apply -f argo-projects/$file -n argocd
+        done
+    id: 'apply-projects'
+
+  # 4. Custom script
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - bash scripts/project_check.sh
+    id: 'check-for-new-projects'
+
+  # 5. Cleanup removed appsets
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - |
+        files=$(grep -wr 'name:' argo-appsets | grep -v '{' | grep -v '\- ' | cut -d: -f3)
+        appsets=$(kubectl get applicationset -n argocd -o jsonpath="{.items[*].metadata.name}")
+        for i in $appsets; do
+          if echo "$files" | grep -q "$i"; then
+            echo "$i - OK"
+          else
+            echo "Removing $i"
+            kubectl delete applicationset "$i" -n argocd
+          fi
+        done
+    id: 'cleanup-removed-appsets'
+
+  # 6. Validate appsets
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - |
+        for file in $(ls argo-appsets | grep -v cloudbuild); do
+          kubectl apply -f argo-appsets/$file -n argocd --dry-run=server
+        done
+    id: 'test-apply-appsets'
+
+  # 7. Apply appsets
+  - name: 'gcr.io/cloud-builders/gcloud'
+    entrypoint: /bin/bash
+    args:
+      - -c
+      - |
+        for file in $(ls argo-appsets | grep -v cloudbuild); do
+          kubectl apply -f argo-appsets/$file -n argocd
+        done
+    id: 'apply-appsets'
+
+# ✅ MUST be outside steps
+options:
+  logging: CLOUD_LOGGING_ONLY

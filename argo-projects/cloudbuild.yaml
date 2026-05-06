@@ -1,0 +1,61 @@
+steps:
+  # 1) Configure kubectl
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: bash
+    args:
+      - -c
+      - gcloud container clusters get-credentials fraud-cluster --zone us-central1-a
+    id: 'configure-kubectl'
+
+  # 2) Cleanup removed AppProjects
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        # Collect project names from repo files (under argo-projects)
+        files=$(grep -Rwh "name:" argo-projects \
+          | grep -v '^\s*-' \
+          | awk '{print $2}' | tr -d '"' | sort -u)
+
+        # Get existing AppProjects from cluster
+        projects=$(kubectl get appprojects -n argocd -o jsonpath="{.items[*].metadata.name}")
+
+        for i in $projects; do
+          if echo "$files" | grep -qw "$i"; then
+            echo "$i - OK"
+          else
+            echo "Removing $i"
+            kubectl delete appproject "$i" -n argocd
+          fi
+        done
+    id: 'cleanup-removed-projects'
+
+  # 3) Validate manifests (server-side dry run)
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        for file in argo-projects/*.yaml; do
+          [ -f "$file" ] || continue
+          echo "Validating $file"
+          kubectl apply -f "$file" -n argocd --dry-run=server
+        done
+    id: 'test-apply-changes'
+
+  # 4) Apply manifests
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+    entrypoint: bash
+    args:
+      - -c
+      - |
+        for file in argo-projects/*.yaml; do
+          [ -f "$file" ] || continue
+          echo "Applying $file"
+          kubectl apply -f "$file" -n argocd
+        done
+    id: 'apply-changes'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
