@@ -12,3 +12,10 @@ spec:
     server: '*'
   sourceRepos:
   - https://github.com/Devopsraining/fraud-helm.git
+  clusterResourceWhitelist:
+    - group: '*'
+      kind: '*'
+
+  namespaceResourceWhitelist:
+    - group: '*'
+      kind: '*'
