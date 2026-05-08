@@ -2,14 +2,13 @@ apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
   generation: 2
-  name: fraud
+  name: vault
   namespace: argocd
 spec:
-  description: A project for fraud detection applications
+  description: A project for vault applications
   destinations:
   - name: '*'
     namespace: '*'
     server: '*'
   sourceRepos:
-  - https://github.com/Devopsraining/fraud-services.git
   - https://github.com/Devopsraining/fraud-helm.git

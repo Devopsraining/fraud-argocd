@@ -20,7 +20,7 @@ spec:
       project: vault
 
       source:
-        repoURL: https://github.com/venkatesharelly/fraud-helm.git
+        repoURL: https://github.com/Devopsraining/fraud-helm.git
         targetRevision: main
         path: '{{path}}'
         helm:
