@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: vault
+  namespace: argocd
+
+spec:
+  generators:
+    - list:
+        elements:
+          - name: vault
+            path: vault
+            namespace: vault
+
+  template:
+    metadata:
+      name: '{{name}}'
+
+    spec:
+      project: vault
+
+      source:
+        repoURL: https://github.com/venkatesharelly/fraud-helm.git
+        targetRevision: main
+        path: '{{path}}'
+        helm:
+          valueFiles:
+            - values.yaml
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+          - ApplyOutOfSyncOnly=true
