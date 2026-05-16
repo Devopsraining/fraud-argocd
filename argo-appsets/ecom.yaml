@@ -11,6 +11,9 @@ spec:
           - name: dev-ecom-frontend
             path: ecom-app-frontend
             namespace: ecommerce
+          - name: dev-ecom-backend
+            path: ecom-app-backend
+            namespace: ecommerce
 
   template:
     metadata:
