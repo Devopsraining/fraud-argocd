@@ -1,4 +1,3 @@
-##
 apiVersion: argoproj.io/v1alpha1
 kind: AppProject
 metadata:
@@ -6,7 +5,7 @@ metadata:
   name: ecom
   namespace: argocd
 spec:
-  description: A project for ecommerce applications
+  description: A project for ecommerce applications 
   destinations:
   - name: '*'
     namespace: '*'
