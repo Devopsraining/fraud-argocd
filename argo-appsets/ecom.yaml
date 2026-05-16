@@ -1,0 +1,41 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: ecom
+  namespace: argocd
+
+spec:
+  generators:
+    - list:
+        elements:
+          - name: dev-ecom-frontend
+            path: ecom-app-frontend
+            namespace: ecommerce
+
+  template:
+    metadata:
+      name: '{{name}}'
+
+    spec:
+      project: ecom
+
+      source:
+        repoURL: https://github.com/Devopsraining/fraud-helm.git
+        targetRevision: main
+        path: '{{path}}'
+        helm:
+          valueFiles:
+            - values.yaml
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: '{{namespace}}'
+
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+          - PruneLast=true
+          - ApplyOutOfSyncOnly=true

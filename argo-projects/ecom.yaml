@@ -1,0 +1,16 @@
+##
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  generation: 2
+  name: ecom
+  namespace: argocd
+spec:
+  description: A project for fraud detection applications
+  destinations:
+  - name: '*'
+    namespace: '*'
+    server: '*'
+  sourceRepos:
+  - https://github.com/Devopsraining/ecommerce-app-new.git
+  - https://github.com/Devopsraining/fraud-helm.git
