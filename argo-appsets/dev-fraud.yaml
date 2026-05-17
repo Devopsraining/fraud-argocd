@@ -8,8 +8,14 @@ spec:
   generators:
     - list:
         elements:
-          - name: dev-fraud
+          - name: dev-fraud-generator
             path: generator
+            namespace: fraud
+          - name: dev-fraud-processor
+            path: processor
+            namespace: fraud
+          - name: dev-fraud-mlservice
+            path: ml-service
             namespace: fraud
 
   template:
